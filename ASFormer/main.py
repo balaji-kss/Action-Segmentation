@@ -38,6 +38,7 @@ bz = 1
 
 channel_mask_rate = 0.3
 arch_type = args.arch
+pos_enc = "fixed" #"learnable" 
 
 # use the full temporal resolution @ 15fps
 sample_rate = 4
@@ -86,7 +87,7 @@ for k,v in actions_dict.items():
 num_classes = len(actions_dict)
 
 
-trainer = Trainer(num_layers, 2, 2, num_f_maps, features_dim, num_classes, channel_mask_rate, arch_type)
+trainer = Trainer(num_layers, 2, 2, num_f_maps, features_dim, num_classes, channel_mask_rate, arch_type, pos_enc)
 if args.action == "train":
     batch_gen = BatchGenerator(num_classes, actions_dict, gt_path, features_path, sample_rate)
     batch_gen.read_data(vid_list_file)

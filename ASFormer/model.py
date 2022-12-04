@@ -288,28 +288,70 @@ class AttModule(nn.Module):
         out = self.dropout(out)
         return (x + out) * mask[:, 0:1, :]
 
-class PositionalEncoding(nn.Module):
-    "Implement the PE function."
+class FixedPositionalEncoding(nn.Module):
 
-    def __init__(self, d_model, max_len=10000):
-        super(PositionalEncoding, self).__init__()
-        # Compute the positional encodings once in log space.
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) *
-                             -(math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0).permute(0,2,1) # of shape (1, d_model, l)
-        self.pe = nn.Parameter(pe, requires_grad=True)
-#         self.register_buffer('pe', pe)
+    def __init__(self, d_model, dropout = 0.1, max_len = 7000):
+        
+        super(FixedPositionalEncoding, self).__init__()
+
+        self.dropout = nn.Dropout(p=dropout)
+        position = torch.arange(max_len).unsqueeze(1)  #(max_len, 1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model)) #(div_term) 
+
+        pe = torch.zeros(1, max_len, d_model)
+        pe[:, :, 0::2] = torch.sin(position * div_term) #(max_len, div_term)
+        pe[:, :, 1::2] = torch.cos(position * div_term)
+
+        self.register_buffer('pe', pe)
 
     def forward(self, x):
-        return x + self.pe[:, :, 0:x.shape[2]]
+        """
+        Args:
+            x: Tensor, shape [batch_size, seq_len, embedding_dim]
+        """
+        x = x + self.pe[:, :x.size(1), :] # (1, T, 2048)
+
+        return self.dropout(x)
+
+class LearnablePositionalEncoding(nn.Module):
+
+    def __init__(self, d_model, dropout=0.1, max_len=7000):
+        super(LearnablePositionalEncoding, self).__init__()
+
+        self.dropout = nn.Dropout(p=dropout)
+        # Each position gets its own embedding
+        # Since indices are always 0 ... max_len, we don't have to do a look-up
+        self.pe = nn.Parameter(torch.empty(1, max_len, d_model))  # requires_grad automatically set to True
+        nn.init.uniform_(self.pe, -0.02, 0.02)
+
+    def forward(self, x):
+        r"""Inputs of forward function
+        Args:
+            x: the sequence fed to the positional encoder model (required).
+        Shape:
+            x: [sequence length, batch size, embed dim]
+            output: [sequence length, batch size, embed dim]
+        """
+
+        x = x + self.pe[:, :x.size(1), :] # (1, T, 2048)
+
+        return self.dropout(x)
+
+def get_pos_encoder(pos_encoding):
+    if pos_encoding == "learnable":
+        return LearnablePositionalEncoding
+    elif pos_encoding == "fixed":
+        return FixedPositionalEncoding
+
+    raise NotImplementedError("pos_encoding should be 'learnable'/'fixed', not '{}'".format(pos_encoding))
 
 class Encoder(nn.Module):
-    def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, att_type, alpha, arch_type):
+    def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, att_type, alpha, arch_type, pos_encoding):
         super(Encoder, self).__init__()
+
+        print('Encoder pos_encoding: ', pos_encoding, flush=True)
+        self.position_en = get_pos_encoder(pos_encoding)(num_f_maps, dropout=0.1)
+
         self.conv_1x1 = nn.Conv1d(input_dim, num_f_maps, 1) # fc layer
 
         if arch_type == 'ddl':
@@ -341,12 +383,21 @@ class Encoder(nn.Module):
         :return:
         '''
 
+        # x shape : (B, 2048, L)
+
         if self.channel_masking_rate > 0:
             x = x.unsqueeze(2)
             x = self.dropout(x)
             x = x.squeeze(2)
 
         feature = self.conv_1x1(x)
+        
+        print('encoder x shape 0 ', feature.shape, mask.shape)
+        feature = feature.permute(0, 2, 1) # (B, C, L) -> (B, L, C)
+        feature = self.position_en(feature)
+        feature = feature.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
+        print('encoder x shape 1 ', feature.shape, mask.shape)
+
         for layer in self.layers:
             feature = layer(feature, None, mask)
         
@@ -355,8 +406,11 @@ class Encoder(nn.Module):
         return out, feature
 
 class Decoder(nn.Module):
-    def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, att_type, alpha, arch_type):
-        super(Decoder, self).__init__()#         self.position_en = PositionalEncoding(d_model=num_f_maps)
+    def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, att_type, alpha, arch_type, pos_encoding):
+        super(Decoder, self).__init__()         
+        
+        print('Decoder pos_encoding: ', pos_encoding, flush=True)
+        self.position_en = get_pos_encoder(pos_encoding)(input_dim, dropout=0.0)
 
         self.conv_1x1 = nn.Conv1d(input_dim, num_f_maps, 1)
 
@@ -372,6 +426,12 @@ class Decoder(nn.Module):
         self.conv_out = nn.Conv1d(num_f_maps, num_classes, 1)
 
     def forward(self, x, fencoder, mask):
+        
+        print('decoder x shape 0 ', x.shape, fencoder.shape, mask.shape)
+        x = x.permute(0, 2, 1) # (B, C, L) -> (B, L, C)
+        x = self.position_en(x)
+        x = x.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
+        print('decoder x shape 1 ', x.shape, fencoder.shape, mask.shape)
 
         feature = self.conv_1x1(x)
         for layer in self.layers:
@@ -382,10 +442,10 @@ class Decoder(nn.Module):
         return out, feature
     
 class MyTransformer(nn.Module):
-    def __init__(self, num_decoders, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type):
+    def __init__(self, num_decoders, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type, pos_enc):
         super(MyTransformer, self).__init__()
-        self.encoder = Encoder(num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, att_type='sliding_att', alpha=1, arch_type=arch_type)
-        self.decoders = nn.ModuleList([copy.deepcopy(Decoder(num_layers, r1, r2, num_f_maps, num_classes, num_classes, att_type='sliding_att', arch_type=arch_type, alpha=exponential_descrease(s))) for s in range(num_decoders)]) # num_decoders
+        self.encoder = Encoder(num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, att_type='sliding_att', alpha=1, arch_type=arch_type, pos_encoding=pos_enc)
+        self.decoders = nn.ModuleList([copy.deepcopy(Decoder(num_layers, r1, r2, num_f_maps, num_classes, num_classes, att_type='sliding_att', arch_type=arch_type, alpha=exponential_descrease(s)), pos_encoding=pos_enc) for s in range(num_decoders)]) # num_decoders
         
     def forward(self, x, mask):
         out, feature = self.encoder(x, mask)
@@ -398,8 +458,8 @@ class MyTransformer(nn.Module):
         return outputs
 
 class Trainer:
-    def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type):
-        self.model = MyTransformer(3, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type)
+    def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type, pos_enc):
+        self.model = MyTransformer(3, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type, pos_enc)
         self.ce = nn.CrossEntropyLoss(ignore_index=-100)
 
         print('Model Size: ', sum(p.numel() for p in self.model.parameters()), flush=True)
