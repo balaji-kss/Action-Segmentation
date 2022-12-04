@@ -45,13 +45,17 @@ sample_rate = 4
 # for 50salads, and up-sample the output to 30 fps
 if args.dataset == "50salads":
     sample_rate = 2
+    lr = 0.001
+    bz = 4
 
 # To prevent over-fitting for GTEA. Early stopping & large dropout rate
 if args.dataset == "gtea":
     channel_mask_rate = 0.5
     
 if args.dataset == 'breakfast':
-    lr = 0.0001
+    sample_rate = 4
+    lr = 0.001
+    bz = 12
 
 
 vid_list_file = "./data/"+args.dataset+"/splits/train.split"+args.split+".bundle"

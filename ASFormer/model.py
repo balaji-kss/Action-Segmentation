@@ -236,6 +236,41 @@ class AttModuleDDL(nn.Module):
 
         return (x + out) * mask[:, 0:1, :]
 
+
+class AttModuleDDA(nn.Module):
+    def __init__(self, layer_lvl, num_layers, in_channels, out_channels, r1, r2, att_type, stage, alpha):
+        super(AttModuleDDA, self).__init__()
+
+        dilation1, dilation2 = 2 ** layer_lvl, 2 ** (num_layers - 1 - layer_lvl)
+        print('lvl: ', layer_lvl, ' d1: ', dilation1, ' d2: ', dilation2, flush=True)
+
+        self.feed_forward_1 = ConvFeedForward(dilation1, in_channels, out_channels)
+        self.feed_forward_2 = ConvFeedForward(dilation2, in_channels, out_channels)
+
+        self.instance_norm_1 = nn.InstanceNorm1d(in_channels, track_running_stats=False)
+        self.instance_norm_2 = nn.InstanceNorm1d(in_channels, track_running_stats=False)
+        self.att_layer_1 = AttLayer(in_channels, in_channels, out_channels, r1, r1, r2, dilation1, att_type=att_type, stage=stage) # dilation
+        self.att_layer_2 = AttLayer(in_channels, in_channels, out_channels, r1, r1, r2, dilation2, att_type=att_type, stage=stage)
+        self.conv_fusion = nn.Conv1d(2 * out_channels, out_channels, 1)
+        #self.conv_1x1 = nn.Conv1d(out_channels, out_channels, 1)
+        self.dropout = nn.Dropout()
+        self.alpha = alpha
+
+    def forward(self, x, f, mask):
+        
+        out1 = self.feed_forward_1(x)
+        out1 = self.alpha * self.att_layer_1(self.instance_norm_1(out1), f, mask) + out1
+        
+        out2 = self.feed_forward_2(x)
+        out2 = self.alpha * self.att_layer_2(self.instance_norm_2(out2), f, mask) + out2
+        
+        out = self.conv_fusion(torch.cat([out1, out2], 1))
+        #out = self.conv_1x1(out)
+        out = self.dropout(out)
+        
+        return (x + out) * mask[:, 0:1, :]
+
+
 class AttModule(nn.Module):
     def __init__(self, dilation, in_channels, out_channels, r1, r2, att_type, stage, alpha):
         super(AttModule, self).__init__()
@@ -282,6 +317,13 @@ class Encoder(nn.Module):
             self.layers = nn.ModuleList(
             [AttModuleDDL(i, num_layers, num_f_maps, num_f_maps, r1, r2, att_type, 'encoder', alpha) for i in
              range(num_layers)])
+
+        elif arch_type == 'dda':
+            print('Encoder arch: ', arch_type, flush=True)
+            self.layers = nn.ModuleList(
+            [AttModuleDDA(i, num_layers, num_f_maps, num_f_maps, r1, r2, att_type, 'encoder', alpha) for i in
+             range(num_layers)])
+
         else:
             print('Encoder arch: default', flush=True)
             self.layers = nn.ModuleList(
