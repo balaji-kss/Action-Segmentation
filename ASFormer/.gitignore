@@ -4,3 +4,4 @@ results/
 models/
 data/
 *.model
+__pycache__/
