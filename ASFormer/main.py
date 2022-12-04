@@ -38,7 +38,7 @@ bz = 1
 
 channel_mask_rate = 0.3
 arch_type = args.arch
-pos_enc = "fixed" #"learnable" 
+pos_enc = "learnable" #"fixed"  
 
 # use the full temporal resolution @ 15fps
 sample_rate = 4

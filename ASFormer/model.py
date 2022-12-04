@@ -392,12 +392,11 @@ class Encoder(nn.Module):
 
         feature = self.conv_1x1(x)
         
-        print('encoder x shape 0 ', feature.shape, mask.shape)
+        # add pos encoding
         feature = feature.permute(0, 2, 1) # (B, C, L) -> (B, L, C)
         feature = self.position_en(feature)
         feature = feature.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
-        print('encoder x shape 1 ', feature.shape, mask.shape)
-
+        
         for layer in self.layers:
             feature = layer(feature, None, mask)
         
@@ -406,11 +405,14 @@ class Encoder(nn.Module):
         return out, feature
 
 class Decoder(nn.Module):
-    def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, att_type, alpha, arch_type, pos_encoding):
+    def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, att_type, alpha, arch_type, pos_encoding, num_dec):
         super(Decoder, self).__init__()         
         
-        print('Decoder pos_encoding: ', pos_encoding, flush=True)
-        self.position_en = get_pos_encoder(pos_encoding)(input_dim, dropout=0.0)
+        self.num_dec = num_dec
+
+        if self.num_dec == 0:
+            print('Decoder pos_encoding: ', pos_encoding, flush=True)
+            self.position_en = get_pos_encoder(pos_encoding)(num_f_maps, dropout=0.1)
 
         self.conv_1x1 = nn.Conv1d(input_dim, num_f_maps, 1)
 
@@ -426,14 +428,15 @@ class Decoder(nn.Module):
         self.conv_out = nn.Conv1d(num_f_maps, num_classes, 1)
 
     def forward(self, x, fencoder, mask):
-        
-        print('decoder x shape 0 ', x.shape, fencoder.shape, mask.shape)
-        x = x.permute(0, 2, 1) # (B, C, L) -> (B, L, C)
-        x = self.position_en(x)
-        x = x.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
-        print('decoder x shape 1 ', x.shape, fencoder.shape, mask.shape)
 
         feature = self.conv_1x1(x)
+
+        if self.num_dec == 0:
+            # add pos encoding
+            feature = feature.permute(0, 2, 1) # (B, C, L) -> (B, L, C)
+            feature = self.position_en(feature)
+            feature = feature.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
+
         for layer in self.layers:
             feature = layer(feature, fencoder, mask)
 
@@ -445,7 +448,7 @@ class MyTransformer(nn.Module):
     def __init__(self, num_decoders, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type, pos_enc):
         super(MyTransformer, self).__init__()
         self.encoder = Encoder(num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, att_type='sliding_att', alpha=1, arch_type=arch_type, pos_encoding=pos_enc)
-        self.decoders = nn.ModuleList([copy.deepcopy(Decoder(num_layers, r1, r2, num_f_maps, num_classes, num_classes, att_type='sliding_att', arch_type=arch_type, alpha=exponential_descrease(s)), pos_encoding=pos_enc) for s in range(num_decoders)]) # num_decoders
+        self.decoders = nn.ModuleList([copy.deepcopy(Decoder(num_layers, r1, r2, num_f_maps, num_classes, num_classes, att_type='sliding_att', arch_type=arch_type, alpha=exponential_descrease(s), pos_encoding=pos_enc, num_dec=s)) for s in range(num_decoders)]) # num_decoders
         
     def forward(self, x, mask):
         out, feature = self.encoder(x, mask)

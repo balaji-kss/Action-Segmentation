@@ -1,12 +1,12 @@
 dataset=breakfast #50salads
 split=1
 action=train #predict
-version=exp7
+version=exp7edpl
 arch=default
 LOGFILE=loggers/${dataset}_${split}_${action}_${arch}_${version}.log
 
 # train
-CUDA_VISIBLE_DEVICES=0 python3 main.py --action=${action} --dataset=${dataset} --version=${version} --arch=${arch} --split=${split} # > "$LOGFILE" 2>&1 & 
+CUDA_VISIBLE_DEVICES=3 python3 main.py --action=${action} --dataset=${dataset} --version=${version} --arch=${arch} --split=${split} > "$LOGFILE" 2>&1 & 
 
 
 # predict

@@ -1,0 +1,5 @@
+Encoder pos_encoding:  fixed
+Encoder arch: default
+Decoder pos_encoding:  fixed
+Model Size:  1147584
+LR:0.001

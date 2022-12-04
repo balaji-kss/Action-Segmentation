@@ -1,0 +1,5 @@
+Encoder pos_encoding:  learnable
+Encoder arch: default
+Decoder pos_encoding:  learnable
+Model Size:  2043584
+LR:0.001
