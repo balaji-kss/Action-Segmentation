@@ -425,6 +425,12 @@ class Decoder(nn.Module):
             self.layers = nn.ModuleList(
                 [AttModuleDDL(i, num_layers, num_f_maps, num_f_maps, r1, r2, att_type, 'decoder', alpha) for i in
                 range(num_layers)])
+
+        if arch_type == 'dda':
+            self.layers = nn.ModuleList(
+                [AttModuleDDA(i, num_layers, num_f_maps, num_f_maps, r1, r2, att_type, 'decoder', alpha) for i in
+                range(num_layers)])
+
         else:
             self.layers = nn.ModuleList(
                 [AttModule(2 ** i, num_f_maps, num_f_maps, r1, r2, att_type, 'decoder', alpha) for i in # 2 ** i
