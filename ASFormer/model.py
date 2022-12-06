@@ -290,7 +290,7 @@ class AttModule(nn.Module):
 
 class FixedPositionalEncoding(nn.Module):
 
-    def __init__(self, d_model, dropout = 0.1, max_len = 7000):
+    def __init__(self, d_model, dropout = 0.1, max_len = 10000):
         
         super(FixedPositionalEncoding, self).__init__()
 
@@ -315,7 +315,7 @@ class FixedPositionalEncoding(nn.Module):
 
 class LearnablePositionalEncoding(nn.Module):
 
-    def __init__(self, d_model, dropout=0.1, max_len=7000):
+    def __init__(self, d_model, dropout=0.1, max_len=10000):
         super(LearnablePositionalEncoding, self).__init__()
 
         self.dropout = nn.Dropout(p=dropout)
@@ -349,8 +349,11 @@ class Encoder(nn.Module):
     def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, att_type, alpha, arch_type, pos_encoding):
         super(Encoder, self).__init__()
 
-        print('Encoder pos_encoding: ', pos_encoding, flush=True)
-        self.position_en = get_pos_encoder(pos_encoding)(num_f_maps, dropout=0.1)
+        self.is_pos_enc = 1 if pos_encoding is not None else 0
+
+        if self.is_pos_enc:
+            print('Encoder pos_encoding: ', pos_encoding, flush=True)
+            self.position_en = get_pos_encoder(pos_encoding)(num_f_maps, dropout=0.1)
 
         self.conv_1x1 = nn.Conv1d(input_dim, num_f_maps, 1) # fc layer
 
@@ -393,9 +396,10 @@ class Encoder(nn.Module):
         feature = self.conv_1x1(x)
         
         # add pos encoding
-        feature = feature.permute(0, 2, 1) # (B, C, L) -> (B, L, C)
-        feature = self.position_en(feature)
-        feature = feature.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
+        if self.is_pos_enc:
+            feature = feature.permute(0, 2, 1) # (B, C, L) -> (B, L, C)
+            feature = self.position_en(feature)
+            feature = feature.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
         
         for layer in self.layers:
             feature = layer(feature, None, mask)
@@ -409,8 +413,9 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()         
         
         self.num_dec = num_dec
+        self.is_pos_enc = 1 if pos_encoding is not None else 0
 
-        if self.num_dec == 0:
+        if self.is_pos_enc and self.num_dec == 0:
             print('Decoder pos_encoding: ', pos_encoding, flush=True)
             self.position_en = get_pos_encoder(pos_encoding)(num_f_maps, dropout=0.1)
 
@@ -431,7 +436,7 @@ class Decoder(nn.Module):
 
         feature = self.conv_1x1(x)
 
-        if self.num_dec == 0:
+        if self.is_pos_enc and self.num_dec == 0:
             # add pos encoding
             feature = feature.permute(0, 2, 1) # (B, C, L) -> (B, L, C)
             feature = self.position_en(feature)

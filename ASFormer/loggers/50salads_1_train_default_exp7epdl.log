@@ -1,0 +1,11 @@
+Encoder pos_encoding:  learnable
+Encoder arch: default
+Decoder pos_encoding:  learnable
+Model Size:  2414476
+LR:0.001
+Epoch: 1, Time: 2.1555, Train loss: 2.8565, Train acc: 0.1012
+Epoch: 2, Time: 2.1444, Train loss: 2.6317, Train acc: 0.1664
+Epoch: 3, Time: 2.1501, Train loss: 2.4194, Train acc: 0.2001
+Epoch: 4, Time: 2.2102, Train loss: 2.2037, Train acc: 0.2051
+Epoch: 5, Time: 2.2367, Train loss: 1.9869, Train acc: 0.2438
+Epoch: 6, Time: 2.3367, Train loss: 1.8537, Train acc: 0.2620

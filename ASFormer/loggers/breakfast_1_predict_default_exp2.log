@@ -1,0 +1,5 @@
+duration:  0  acc:  0.663  total:  137321
+duration:  300  acc:  0.695  total:  90579
+duration:  600  acc:  0.703  total:  51614
+duration:  900  acc:  0.807  total:  190414
+Acc: 73.0340  Edit: 75.004911  F1@10,25,50  [77.07042254 72.33802817 59.15492958]

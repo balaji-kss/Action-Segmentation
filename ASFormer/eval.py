@@ -11,7 +11,7 @@ def read_file(path):
     return content
  
 
-def get_idxs(gt_start, gt_end, dur_range, bg_class=["SIL"]):
+def get_idxs(gt_start, gt_end, dur_range):
     
     min_dur, max_dur = dur_range[0], dur_range[1]
     gt_start, gt_end = np.array(gt_start), np.array(gt_end)
@@ -98,6 +98,9 @@ def f_score(recognized, ground_truth, overlap, bg_class=["background"]):
     fn = len(y_label) - sum(hits)
     return float(tp), float(fp), float(fn)
  
+def num_iou_matches():
+
+    pass
 def segment_bars(save_path, *labels):
     num_pics = len(labels)
     color_map = plt.get_cmap('seismic')
@@ -159,7 +162,7 @@ def eval_seg_dur(dataset, recog_path, file_list, durations):
     actions = file_ptr.read().split('\n')[:-1]
     file_ptr.close()
 
-    corrects, totals = [0.] * len(durations), [0] * len(durations)
+    corrects, totals, counts = [0.] * len(durations), [0] * len(durations), [0] * len(durations)
 
     for vid in list_of_videos:
           
@@ -169,7 +172,8 @@ def eval_seg_dur(dataset, recog_path, file_list, durations):
         recog_file = recog_path + vid.split('.')[0]
         recog_content = read_file(recog_file).split('\n')[1].split()
 
-        y_label, y_start, y_end = get_labels_start_end_time(gt_content, bg_class=["SIL"])
+        y_label, y_start, y_end = get_labels_start_end_time(gt_content,     bg_class=[""])
+        print(y_label, y_start, y_end)
 
         for di in range(len(durations)):
             
@@ -180,10 +184,12 @@ def eval_seg_dur(dataset, recog_path, file_list, durations):
 
             correct = 0
             total = 0
+            count = 0
 
-            print(y_start, y_end)
+            print('dur_range ', dur_range)
+            #print(y_start, y_end)
             gt_start_idxs, gt_end_idxs = get_idxs(y_start, y_end, dur_range)
-            print(gt_start_idxs, gt_end_idxs)
+            #print(gt_start_idxs, gt_end_idxs)
 
             for gt_start_idx, gt_end_idx in zip(gt_start_idxs, gt_end_idxs):
 
@@ -195,10 +201,13 @@ def eval_seg_dur(dataset, recog_path, file_list, durations):
                     if gt_content_dur[i] == recog_content_dur[i]:
                         correct += 1
 
+                count += 1
+
             corrects[di] += correct
             totals[di] += total
+            counts[di] += count
 
-    return corrects, totals
+    return corrects, totals, counts
 
 def func_eval(dataset, recog_path, file_list):
     ground_truth_path = "./data/" + dataset + "/groundTruth/"
@@ -268,8 +277,9 @@ def main():
     parser = argparse.ArgumentParser()
  
     parser.add_argument('--dataset', default="gtea")
-    parser.add_argument('--split', default=1, type=int)
+    parser.add_argument('--split', default='1')
     parser.add_argument('--result_dir', default='results')
+    parser.add_argument('--version', default='exp2')
     
     args = parser.parse_args()
 
@@ -293,17 +303,18 @@ def main():
         f1s_all = [i / cnt_split_dict[args.dataset] for i in f1s_all]
     else:
         split = args.split
-        recog_path = "./{}/".format(args.result_dir)+args.dataset+"/split_{}".format(split)+"/"
+        recog_path = "./{}/".format(args.result_dir)+args.dataset+"/split_"+args.split+ '/' + args.version + '/'
         file_list = "./data/"+args.dataset+"/splits/test.split{}".format(split)+".bundle"
-        # acc_all, edit_all, f1s_all = func_eval(args.dataset, recog_path, file_list)
+        acc_all, edit_all, f1s_all = func_eval(args.dataset, recog_path, file_list)
 
         durations = [0, 300, 600, 900]
-        corrects, totals = eval_seg_dur(args.dataset, recog_path, file_list, durations)
+        corrects, totals, counts = eval_seg_dur(args.dataset, recog_path, file_list, durations)
         
-        for dur, correct, total in zip(durations, corrects, totals):
-            print('duration: ', dur, ' acc: ', round(correct/total, 3), ' total: ', total)
+        for dur, correct, total, count in zip(durations, corrects, totals, counts):
+            print('duration: ', dur, ' acc: ', round(correct/total, 3), ' count: ', count, flush=True)
 
-    # print("Acc: %.4f  Edit: %4f  F1@10,25,50 " % (acc_all, edit_all), f1s_all)
+    print('acc ', np.sum(correct)/np.sum(total) )        
+    print("Acc: %.4f  Edit: %4f  F1@10,25,50 " % (acc_all, edit_all), f1s_all)
 
 
 if __name__ == '__main__':

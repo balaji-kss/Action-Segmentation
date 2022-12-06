@@ -1,0 +1,19 @@
+Encoder pos_encoding:  learnable
+Encoder arch: default
+Model Size:  1774476
+LR:0.001
+Epoch: 1, Time: 2.2478, Train loss: 2.8680, Train acc: 0.0924
+Epoch: 2, Time: 2.2677, Train loss: 2.6672, Train acc: 0.1369
+Epoch: 3, Time: 2.1690, Train loss: 2.4755, Train acc: 0.1903
+Epoch: 4, Time: 2.1579, Train loss: 2.2527, Train acc: 0.1912
+Epoch: 5, Time: 2.1749, Train loss: 2.0778, Train acc: 0.2181
+Epoch: 6, Time: 2.0993, Train loss: 1.9636, Train acc: 0.2338
+Epoch: 7, Time: 2.0540, Train loss: 1.8932, Train acc: 0.2627
+Epoch: 8, Time: 2.1109, Train loss: 1.6917, Train acc: 0.3130
+Epoch: 9, Time: 2.1801, Train loss: 1.4975, Train acc: 0.4140
+Epoch: 10, Time: 2.2312, Train loss: 1.3759, Train acc: 0.4754
+---[epoch 10]---: tst acc = 0.386612
+Epoch: 11, Time: 2.3913, Train loss: 1.2492, Train acc: 0.5233
+Epoch: 12, Time: 2.0321, Train loss: 1.1511, Train acc: 0.5847
+Epoch: 13, Time: 2.2340, Train loss: 1.1334, Train acc: 0.5953
+Epoch: 14, Time: 2.2348, Train loss: 1.0249, Train acc: 0.6438

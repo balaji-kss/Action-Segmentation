@@ -1,0 +1,12 @@
+Encoder pos_encoding:  fixed
+Encoder arch: default
+Decoder pos_encoding:  fixed
+Model Size:  1134476
+LR:0.001
+Epoch: 1, Time: 2.1475, Train loss: 2.8732, Train acc: 0.1031
+Epoch: 2, Time: 2.1269, Train loss: 2.5687, Train acc: 0.1546
+Epoch: 3, Time: 2.1643, Train loss: 2.3641, Train acc: 0.2051
+Epoch: 4, Time: 2.2023, Train loss: 2.2224, Train acc: 0.2143
+Epoch: 5, Time: 2.2360, Train loss: 2.0772, Train acc: 0.2422
+Epoch: 6, Time: 2.1394, Train loss: 2.0304, Train acc: 0.2405
+Epoch: 7, Time: 2.0706, Train loss: 1.9278, Train acc: 0.2654
