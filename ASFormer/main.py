@@ -1,6 +1,6 @@
 import torch
  
-from model import *
+from new_model import *
 from batch_gen import BatchGenerator
 from eval import func_eval
 

@@ -222,7 +222,7 @@ def main():
     
     if args.split == 0:
         for split in range(1, cnt_split_dict[args.dataset] + 1):
-            recog_path = "./{}/".format(args.result_dir)+args.dataset+"/split_{}".format(split)+"/"
+            recog_path = "./{}/".format(args.result_dir)+args.dataset+"/split_{}".format(split)+"/exp8/"
             file_list = "./data/"+args.dataset+"/splits/test.split{}".format(split)+".bundle"
             acc, edit, f1s = func_eval(args.dataset, recog_path, file_list)
             acc_all += acc
@@ -236,7 +236,7 @@ def main():
         f1s_all = [i / cnt_split_dict[args.dataset] for i in f1s_all]
     else:
         split = args.split
-        recog_path = "./{}/".format(args.result_dir)+args.dataset+"/split_{}".format(split)+"/"
+        recog_path = "./{}/".format(args.result_dir)+args.dataset+"/split_{}".format(split)+"/exp8/"
         file_list = "./data/"+args.dataset+"/splits/test.split{}".format(split)+".bundle"
         acc_all, edit_all, f1s_all = func_eval(args.dataset, recog_path, file_list)
     

@@ -329,7 +329,7 @@ class Encoder(nn.Module):
             self.layers = nn.ModuleList(
                 [AttModule(2 ** i, num_f_maps, num_f_maps, r1, r2, att_type, 'encoder', alpha) for i in # 2**i
                 range(num_layers)])
-
+        print(num_layers, num_f_maps, num_classes)
         self.conv_out = nn.Conv1d(num_f_maps, num_classes, 1)
         self.dropout = nn.Dropout2d(p=channel_masking_rate)
         self.channel_masking_rate = channel_masking_rate
@@ -351,7 +351,9 @@ class Encoder(nn.Module):
             feature = layer(feature, None, mask)
         
         out = self.conv_out(feature) * mask[:, 0:1, :]
-
+        # bs, num_classes, L = out.size()
+        # _, num_f_maps, _ = feature.size()
+        print(x.shape, out.size(), feature.size())
         return out, feature
 
 class Decoder(nn.Module):
