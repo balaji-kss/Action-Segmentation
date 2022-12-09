@@ -1,0 +1,67 @@
+Encoder arch:  dda
+lvl:  0  d1:  1  d2:  512
+lvl:  1  d1:  2  d2:  256
+lvl:  2  d1:  4  d2:  128
+lvl:  3  d1:  8  d2:  64
+lvl:  4  d1:  16  d2:  32
+lvl:  5  d1:  32  d2:  16
+lvl:  6  d1:  64  d2:  8
+lvl:  7  d1:  128  d2:  4
+lvl:  8  d1:  256  d2:  2
+lvl:  9  d1:  512  d2:  1
+lvl:  0  d1:  1  d2:  512
+lvl:  1  d1:  2  d2:  256
+lvl:  2  d1:  4  d2:  128
+lvl:  3  d1:  8  d2:  64
+lvl:  4  d1:  16  d2:  32
+lvl:  5  d1:  32  d2:  16
+lvl:  6  d1:  64  d2:  8
+lvl:  7  d1:  128  d2:  4
+lvl:  8  d1:  256  d2:  2
+lvl:  9  d1:  512  d2:  1
+lvl:  0  d1:  1  d2:  512
+lvl:  1  d1:  2  d2:  256
+lvl:  2  d1:  4  d2:  128
+lvl:  3  d1:  8  d2:  64
+lvl:  4  d1:  16  d2:  32
+lvl:  5  d1:  32  d2:  16
+lvl:  6  d1:  64  d2:  8
+lvl:  7  d1:  128  d2:  4
+lvl:  8  d1:  256  d2:  2
+lvl:  9  d1:  512  d2:  1
+lvl:  0  d1:  1  d2:  512
+lvl:  1  d1:  2  d2:  256
+lvl:  2  d1:  4  d2:  128
+lvl:  3  d1:  8  d2:  64
+lvl:  4  d1:  16  d2:  32
+lvl:  5  d1:  32  d2:  16
+lvl:  6  d1:  64  d2:  8
+lvl:  7  d1:  128  d2:  4
+lvl:  8  d1:  256  d2:  2
+lvl:  9  d1:  512  d2:  1
+Model Size:  2126476
+LR:0.001
+Traceback (most recent call last):
+  File "main.py", line 98, in <module>
+    trainer.train(model_dir, batch_gen, num_epochs, bz, lr, batch_gen_tst)
+  File "/home/balaji/Action-Segmentation/ASFormer/model.py", line 500, in train
+    ps = self.model(batch_input, mask) #(4, 12, 48, 832)
+  File "/home/yuexi/pyenv_1.6/lib/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/balaji/Action-Segmentation/ASFormer/model.py", line 469, in forward
+    out, feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], feature * mask[:, 0:1, :], mask)
+  File "/home/yuexi/pyenv_1.6/lib/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/balaji/Action-Segmentation/ASFormer/model.py", line 452, in forward
+    feature = layer(feature, fencoder, mask)
+  File "/home/yuexi/pyenv_1.6/lib/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/balaji/Action-Segmentation/ASFormer/model.py", line 265, in forward
+    out2 = self.alpha * self.att_layer_2(self.instance_norm_2(out2), f, mask) + out2
+  File "/home/yuexi/pyenv_1.6/lib/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/balaji/Action-Segmentation/ASFormer/model.py", line 93, in forward
+    return self._sliding_window_self_att(query, key, value, mask)
+  File "/home/balaji/Action-Segmentation/ASFormer/model.py", line 163, in _sliding_window_self_att
+    final_mask = self.window_mask.repeat(m_batchsize * nb, 1, 1) * padding_mask 
+RuntimeError: CUDA out of memory. Tried to allocate 28.00 MiB (GPU 0; 10.76 GiB total capacity; 9.45 GiB already allocated; 15.44 MiB free; 9.58 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

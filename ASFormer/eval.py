@@ -162,7 +162,7 @@ def eval_seg_dur(dataset, recog_path, file_list, durations):
     actions = file_ptr.read().split('\n')[:-1]
     file_ptr.close()
 
-    corrects, totals, counts = [0.] * len(durations), [0] * len(durations), [0] * len(durations)
+    corrects, totals, counts = [0] * len(durations), [0] * len(durations), [0] * len(durations)
 
     for vid in list_of_videos:
           
@@ -172,8 +172,8 @@ def eval_seg_dur(dataset, recog_path, file_list, durations):
         recog_file = recog_path + vid.split('.')[0]
         recog_content = read_file(recog_file).split('\n')[1].split()
 
-        y_label, y_start, y_end = get_labels_start_end_time(gt_content,     bg_class=[""])
-        print(y_label, y_start, y_end)
+        y_label, y_start, y_end = get_labels_start_end_time(gt_content)
+        #print(y_label, y_start, y_end)
 
         for di in range(len(durations)):
             
@@ -186,7 +186,7 @@ def eval_seg_dur(dataset, recog_path, file_list, durations):
             total = 0
             count = 0
 
-            print('dur_range ', dur_range)
+            #print('dur_range ', dur_range)
             #print(y_start, y_end)
             gt_start_idxs, gt_end_idxs = get_idxs(y_start, y_end, dur_range)
             #print(gt_start_idxs, gt_end_idxs)
@@ -287,9 +287,9 @@ def main():
     edit_all = 0.
     f1s_all = [0.,0.,0.]
     
-    if args.split == 0:
+    if int(args.split) == 0:
         for split in range(1, cnt_split_dict[args.dataset] + 1):
-            recog_path = "./{}/".format(args.result_dir)+args.dataset+"/split_{}".format(split)+"/"
+            recog_path = "./{}/".format(args.result_dir)+args.dataset+"/split_{}".format(split)+ '/' + args.version + '/'
             file_list = "./data/"+args.dataset+"/splits/test.split{}".format(split)+".bundle"
             acc, edit, f1s = func_eval(args.dataset, recog_path, file_list)
             acc_all += acc
@@ -307,7 +307,7 @@ def main():
         file_list = "./data/"+args.dataset+"/splits/test.split{}".format(split)+".bundle"
         acc_all, edit_all, f1s_all = func_eval(args.dataset, recog_path, file_list)
 
-        durations = [0, 300, 600, 900]
+        durations = [0, 450, 900]
         corrects, totals, counts = eval_seg_dur(args.dataset, recog_path, file_list, durations)
         
         for dur, correct, total, count in zip(durations, corrects, totals, counts):
@@ -316,6 +316,42 @@ def main():
     print('acc ', np.sum(correct)/np.sum(total) )        
     print("Acc: %.4f  Edit: %4f  F1@10,25,50 " % (acc_all, edit_all), f1s_all)
 
+def get_stats(dataset, file_list, num_bins=20):
 
+    ground_truth_path = "./" + dataset + "/groundTruth/"
+    mapping_file = "./" + dataset + "/mapping.txt"
+    list_of_videos = read_file(file_list).split('\n')[:-1]
+ 
+    file_ptr = open(mapping_file, 'r')
+    actions = file_ptr.read().split('\n')[:-1]
+    file_ptr.close()
+
+    activities = []
+    durations = []
+    for vid in list_of_videos:
+          
+        gt_file = ground_truth_path + vid
+        gt_content = read_file(gt_file).split('\n')[0:-1]
+
+        y_label, y_start, y_end = get_labels_start_end_time(gt_content)
+        diff = np.array(y_end) - np.array(y_start)
+        durations += diff.tolist()
+        activities += y_label
+
+    # print('durations ', durations)
+    # print('activities ', activities)
+    min_dur, max_dur = min(durations), max(durations)
+    print(min_dur, max_dur)
+    
+    width = max_dur//num_bins
+    bins = [int(i*250) for i in range(num_bins+1)]
+    print('bins ', bins)
+    plt.hist(durations, bins = bins) 
+    plt.title("Number of instances vs Duration of activity in GTEA - test") 
+    plt.xlabel('Number of frames in an activity')
+    plt.ylabel('Number of instances')
+    plt.show()
+
+        
 if __name__ == '__main__':
     main()

@@ -28,3 +28,114 @@ Epoch: 20, Time: 0.5625, Train loss: 1.6265, Train acc: 0.9259
 Epoch: 21, Time: 0.5674, Train loss: 1.5295, Train acc: 0.9374
 Epoch: 22, Time: 0.5621, Train loss: 1.4891, Train acc: 0.9372
 Epoch: 23, Time: 0.5797, Train loss: 1.4770, Train acc: 0.9371
+Epoch: 24, Time: 0.5598, Train loss: 1.4347, Train acc: 0.9351
+Epoch: 25, Time: 0.5668, Train loss: 1.3931, Train acc: 0.9434
+Epoch: 26, Time: 0.5623, Train loss: 1.3676, Train acc: 0.9395
+Epoch: 27, Time: 0.5650, Train loss: 1.3341, Train acc: 0.9434
+Epoch: 28, Time: 0.5595, Train loss: 1.3084, Train acc: 0.9444
+Epoch: 29, Time: 0.5914, Train loss: 1.2831, Train acc: 0.9478
+Epoch: 30, Time: 0.5689, Train loss: 1.2329, Train acc: 0.9503
+---[epoch 30]---: tst acc = 0.771899
+Epoch: 31, Time: 0.5972, Train loss: 1.2652, Train acc: 0.9473
+Epoch: 32, Time: 0.5641, Train loss: 1.2343, Train acc: 0.9510
+Epoch: 33, Time: 0.5562, Train loss: 1.2812, Train acc: 0.9433
+Epoch    34: reducing learning rate of group 0 to 2.5000e-04.
+Epoch: 34, Time: 0.5592, Train loss: 1.2808, Train acc: 0.9440
+Epoch: 35, Time: 0.5647, Train loss: 1.2035, Train acc: 0.9517
+Epoch: 36, Time: 0.5762, Train loss: 1.1407, Train acc: 0.9571
+Epoch: 37, Time: 0.5729, Train loss: 1.0850, Train acc: 0.9633
+Epoch: 38, Time: 0.5608, Train loss: 1.0732, Train acc: 0.9634
+Epoch: 39, Time: 0.5675, Train loss: 1.0614, Train acc: 0.9627
+Epoch: 40, Time: 0.5830, Train loss: 1.0498, Train acc: 0.9652
+---[epoch 40]---: tst acc = 0.793743
+Epoch: 41, Time: 0.5768, Train loss: 1.0637, Train acc: 0.9627
+Epoch: 42, Time: 0.5679, Train loss: 1.0297, Train acc: 0.9655
+Epoch: 43, Time: 0.5952, Train loss: 1.0202, Train acc: 0.9654
+Epoch: 44, Time: 0.5646, Train loss: 0.9972, Train acc: 0.9669
+Epoch: 45, Time: 0.5962, Train loss: 1.0149, Train acc: 0.9650
+Epoch: 46, Time: 0.5590, Train loss: 1.0089, Train acc: 0.9644
+Epoch: 47, Time: 0.5608, Train loss: 1.0053, Train acc: 0.9649
+Epoch: 48, Time: 0.5666, Train loss: 0.9912, Train acc: 0.9652
+Epoch: 49, Time: 0.5784, Train loss: 1.0032, Train acc: 0.9639
+Epoch: 50, Time: 0.5685, Train loss: 0.9805, Train acc: 0.9655
+---[epoch 50]---: tst acc = 0.789572
+Epoch: 51, Time: 0.5644, Train loss: 0.9574, Train acc: 0.9683
+Epoch: 52, Time: 0.5668, Train loss: 0.9570, Train acc: 0.9672
+Epoch: 53, Time: 0.5584, Train loss: 0.9454, Train acc: 0.9674
+Epoch: 54, Time: 0.5939, Train loss: 0.9270, Train acc: 0.9701
+Epoch: 55, Time: 0.5820, Train loss: 0.9320, Train acc: 0.9693
+Epoch: 56, Time: 0.5615, Train loss: 0.9286, Train acc: 0.9683
+Epoch: 57, Time: 0.5621, Train loss: 0.9253, Train acc: 0.9692
+Epoch: 58, Time: 0.5750, Train loss: 0.9086, Train acc: 0.9697
+Epoch: 59, Time: 0.5679, Train loss: 0.9016, Train acc: 0.9720
+Epoch: 60, Time: 0.5646, Train loss: 0.8984, Train acc: 0.9698
+---[epoch 60]---: tst acc = 0.789572
+Epoch: 61, Time: 0.5832, Train loss: 0.9066, Train acc: 0.9685
+Epoch: 62, Time: 0.5793, Train loss: 0.9035, Train acc: 0.9687
+Epoch: 63, Time: 0.5616, Train loss: 0.8815, Train acc: 0.9704
+Epoch: 64, Time: 0.5720, Train loss: 0.8712, Train acc: 0.9716
+Epoch: 65, Time: 0.5687, Train loss: 0.8740, Train acc: 0.9720
+Epoch: 66, Time: 0.5653, Train loss: 0.8628, Train acc: 0.9719
+Epoch: 67, Time: 0.5858, Train loss: 0.8583, Train acc: 0.9721
+Epoch: 68, Time: 0.5776, Train loss: 0.8685, Train acc: 0.9715
+Epoch: 69, Time: 0.6119, Train loss: 0.8734, Train acc: 0.9696
+Epoch: 70, Time: 0.5644, Train loss: 0.8510, Train acc: 0.9728
+---[epoch 70]---: tst acc = 0.797475
+Epoch: 71, Time: 0.6479, Train loss: 0.8618, Train acc: 0.9712
+Epoch: 72, Time: 0.5821, Train loss: 0.8560, Train acc: 0.9702
+Epoch: 73, Time: 0.5656, Train loss: 0.8451, Train acc: 0.9714
+Epoch: 74, Time: 0.5606, Train loss: 0.8391, Train acc: 0.9723
+Epoch: 75, Time: 0.5887, Train loss: 0.8310, Train acc: 0.9726
+Epoch: 76, Time: 0.5698, Train loss: 0.8236, Train acc: 0.9735
+Epoch: 77, Time: 0.5664, Train loss: 0.8225, Train acc: 0.9724
+Epoch: 78, Time: 0.5711, Train loss: 0.8185, Train acc: 0.9730
+Epoch: 79, Time: 0.5649, Train loss: 0.8154, Train acc: 0.9738
+Epoch: 80, Time: 0.5673, Train loss: 0.7856, Train acc: 0.9760
+---[epoch 80]---: tst acc = 0.802086
+Epoch: 81, Time: 0.5860, Train loss: 0.8083, Train acc: 0.9743
+Epoch: 82, Time: 0.6081, Train loss: 0.8022, Train acc: 0.9725
+Epoch: 83, Time: 0.5626, Train loss: 0.8023, Train acc: 0.9726
+Epoch    84: reducing learning rate of group 0 to 1.2500e-04.
+Epoch: 84, Time: 0.5568, Train loss: 0.7927, Train acc: 0.9735
+Epoch: 85, Time: 0.5599, Train loss: 0.7659, Train acc: 0.9765
+Epoch: 86, Time: 0.5845, Train loss: 0.7544, Train acc: 0.9772
+Epoch: 87, Time: 0.5698, Train loss: 0.7714, Train acc: 0.9757
+Epoch: 88, Time: 0.5716, Train loss: 0.7382, Train acc: 0.9788
+Epoch: 89, Time: 0.5712, Train loss: 0.7613, Train acc: 0.9765
+Epoch: 90, Time: 0.5837, Train loss: 0.7432, Train acc: 0.9787
+---[epoch 90]---: tst acc = 0.793085
+Epoch: 91, Time: 0.5693, Train loss: 0.7408, Train acc: 0.9791
+Epoch    92: reducing learning rate of group 0 to 6.2500e-05.
+Epoch: 92, Time: 0.5599, Train loss: 0.7432, Train acc: 0.9787
+Epoch: 93, Time: 0.5684, Train loss: 0.7301, Train acc: 0.9798
+Epoch: 94, Time: 0.5679, Train loss: 0.7330, Train acc: 0.9791
+Epoch: 95, Time: 0.5641, Train loss: 0.7369, Train acc: 0.9790
+Epoch: 96, Time: 0.5724, Train loss: 0.7322, Train acc: 0.9797
+Epoch: 97, Time: 0.5567, Train loss: 0.7247, Train acc: 0.9793
+Epoch: 98, Time: 0.5584, Train loss: 0.7238, Train acc: 0.9793
+Epoch: 99, Time: 0.5595, Train loss: 0.7255, Train acc: 0.9800
+Epoch: 100, Time: 0.5692, Train loss: 0.7280, Train acc: 0.9785
+---[epoch 100]---: tst acc = 0.794072
+Epoch: 101, Time: 0.5575, Train loss: 0.7219, Train acc: 0.9795
+Epoch: 102, Time: 0.5593, Train loss: 0.7336, Train acc: 0.9781
+Epoch: 103, Time: 0.5848, Train loss: 0.7152, Train acc: 0.9785
+Epoch: 104, Time: 0.5813, Train loss: 0.7085, Train acc: 0.9812
+Epoch: 105, Time: 0.5788, Train loss: 0.7187, Train acc: 0.9801
+Epoch: 106, Time: 0.5760, Train loss: 0.7077, Train acc: 0.9806
+Epoch: 107, Time: 0.5719, Train loss: 0.7114, Train acc: 0.9820
+Epoch: 108, Time: 0.5624, Train loss: 0.7000, Train acc: 0.9811
+Epoch: 109, Time: 0.5650, Train loss: 0.7127, Train acc: 0.9797
+Epoch: 110, Time: 0.5708, Train loss: 0.7143, Train acc: 0.9802
+---[epoch 110]---: tst acc = 0.790450
+Epoch: 111, Time: 0.5871, Train loss: 0.6997, Train acc: 0.9815
+Epoch: 112, Time: 0.5660, Train loss: 0.7049, Train acc: 0.9811
+Epoch: 113, Time: 0.5775, Train loss: 0.7045, Train acc: 0.9809
+Epoch: 114, Time: 0.5808, Train loss: 0.7030, Train acc: 0.9816
+Epoch   115: reducing learning rate of group 0 to 3.1250e-05.
+Epoch: 115, Time: 0.5869, Train loss: 0.7192, Train acc: 0.9798
+Epoch: 116, Time: 0.5649, Train loss: 0.7030, Train acc: 0.9803
+Epoch: 117, Time: 0.6081, Train loss: 0.6867, Train acc: 0.9823
+Epoch: 118, Time: 0.5498, Train loss: 0.7077, Train acc: 0.9797
+Epoch: 119, Time: 0.5571, Train loss: 0.6992, Train acc: 0.9808
+Epoch: 120, Time: 0.5476, Train loss: 0.6927, Train acc: 0.9813
+---[epoch 120]---: tst acc = 0.799122
