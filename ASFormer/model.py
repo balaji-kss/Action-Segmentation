@@ -274,6 +274,9 @@ class AttModuleDDA(nn.Module):
 class AttModule(nn.Module):
     def __init__(self, dilation, in_channels, out_channels, r1, r2, att_type, stage, alpha):
         super(AttModule, self).__init__()
+
+        dilation = min(dilation, 2048)
+        print(' d: ', dilation, flush=True)
         self.feed_forward = ConvFeedForward(dilation, in_channels, out_channels)
         self.instance_norm = nn.InstanceNorm1d(in_channels, track_running_stats=False)
         self.att_layer = AttLayer(in_channels, in_channels, out_channels, r1, r1, r2, dilation, att_type=att_type, stage=stage) # dilation
@@ -485,7 +488,7 @@ class Trainer:
         self.model.train()
         self.model.to(device)
         optimizer = optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=1e-5)
-        print('LR:{}'.format(learning_rate), flush=True)
+        print('LR:{}, BS:{}'.format(learning_rate, batch_size), flush=True)
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, verbose=True)
         
         for epoch in range(num_epochs):

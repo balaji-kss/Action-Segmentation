@@ -46,8 +46,8 @@ sample_rate = 1
 # for 50salads, and up-sample the output to 30 fps
 if args.dataset == "50salads":
     sample_rate = 2
-    lr = 0.001
-    bz = 4
+    lr = 0.0005
+    bz = 1
 
 # To prevent over-fitting for GTEA. Early stopping & large dropout rate
 if args.dataset == "gtea":
@@ -57,7 +57,6 @@ if args.dataset == 'breakfast':
     sample_rate = 4
     lr = 0.001
     bz = 12
-
 
 vid_list_file = "./data/"+args.dataset+"/splits/train.split"+args.split+".bundle"
 vid_list_file_tst = "./data/"+args.dataset+"/splits/test.split"+args.split+".bundle"
