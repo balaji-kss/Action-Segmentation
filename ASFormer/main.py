@@ -19,7 +19,7 @@ torch.backends.cudnn.deterministic = True
  
 parser = argparse.ArgumentParser()
 parser.add_argument('--action', default='train')
-parser.add_argument('--dataset', default="50salads")
+parser.add_argument('--dataset', default="gtea")
 parser.add_argument('--split', default='1')
 parser.add_argument('--model_dir', default='models')
 parser.add_argument('--arch', default='org')
@@ -31,7 +31,7 @@ args = parser.parse_args()
 num_epochs = 120
     
 lr = 0.0005
-num_layers = 10
+num_layers = 9
 num_f_maps = 64
 features_dim = 2048
 bz = 1

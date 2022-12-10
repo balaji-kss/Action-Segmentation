@@ -347,14 +347,17 @@ class Encoder(nn.Module):
             x = x.squeeze(2)
 
         feature = self.conv_1x1(x)
+        bs, num_f_maps, L = feature.size()
+        enc_features = feature.reshape(1, bs, num_f_maps, L)
         for layer in self.layers:
             feature = layer(feature, None, mask)
+            enc_features = torch.cat((enc_features, feature.reshape(1, bs, num_f_maps, L)), dim=0)
         
         out = self.conv_out(feature) * mask[:, 0:1, :]
-        # bs, num_classes, L = out.size()
-        # _, num_f_maps, _ = feature.size()
-        print(x.shape, out.size(), feature.size())
-        return out, feature
+        bs, num_classes, L = out.size()
+        _, num_f_maps, _ = feature.size()
+        # print(x.shape, out.size(), feature.size(), enc_features.size())
+        return out, enc_features
 
 class Decoder(nn.Module):
     def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, att_type, alpha, arch_type):
@@ -379,15 +382,19 @@ class Decoder(nn.Module):
 
         self.conv_out = nn.Conv1d(num_f_maps, num_classes, 1)
 
-    def forward(self, x, fencoder, mask):
+    def forward(self, x, enc_features, mask):
 
         feature = self.conv_1x1(x)
+        num_layer = 1 
         for layer in self.layers:
-            feature = layer(feature, fencoder, mask)
+            # feature = layer(feature, fencoder, mask)
+            # print(enc_features.size(), enc_features[-num_layer].size())
+            feature = layer(feature, enc_features[-num_layer], mask)
+            num_layer += 1
 
         out = self.conv_out(feature) * mask[:, 0:1, :]
 
-        return out, feature
+        return out
     
 class MyTransformer(nn.Module):
     def __init__(self, num_decoders, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type):
@@ -396,18 +403,19 @@ class MyTransformer(nn.Module):
         self.decoders = nn.ModuleList([copy.deepcopy(Decoder(num_layers, r1, r2, num_f_maps, num_classes, num_classes, att_type='sliding_att', arch_type=arch_type, alpha=exponential_descrease(s))) for s in range(num_decoders)]) # num_decoders
         
     def forward(self, x, mask):
-        out, feature = self.encoder(x, mask)
+        out, enc_features = self.encoder(x, mask)
         outputs = out.unsqueeze(0)
         
         for decoder in self.decoders:
-            out, feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], feature * mask[:, 0:1, :], mask)
+            out = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_features * mask[:, 0:1, :], mask)
+            # print('---->>>>>>',feature.size, mask[:, 0:1, :].size())
             outputs = torch.cat((outputs, out.unsqueeze(0)), dim=0)
  
         return outputs
 
 class Trainer:
     def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type):
-        self.model = MyTransformer(3, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type)
+        self.model = MyTransformer(1, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type)
         self.ce = nn.CrossEntropyLoss(ignore_index=-100)
 
         print('Model Size: ', sum(p.numel() for p in self.model.parameters()), flush=True)
