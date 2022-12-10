@@ -36,6 +36,7 @@ class AttentionHelper(nn.Module):
         
         energy = torch.bmm(proj_query.permute(0, 2, 1), proj_key)  # out of shape (B, L1, L2)
         attention = energy / np.sqrt(c1)
+        print('attention  shape', attention.shape, ' padding_mask ', padding_mask.shape)
         attention = attention + torch.log(padding_mask + 1e-6) # mask the zero paddings. log(1e-6) for zero paddings
         attention = self.softmax(attention) 
         attention = attention * padding_mask
@@ -465,9 +466,9 @@ class MyTransformer(nn.Module):
         self.decoders = nn.ModuleList([copy.deepcopy(Decoder(num_layers, r1, r2, num_f_maps, num_classes, num_classes, att_type='sliding_att', arch_type=arch_type, alpha=exponential_descrease(s), pos_encoding=pos_enc, num_dec=s)) for s in range(num_decoders)]) # num_decoders
         
     def forward(self, x, mask):
-        out, feature = self.encoder(x, mask)
+        out, feature = self.encoder(x, mask) #mask: (batch, num_classes, embedding dimension)
         outputs = out.unsqueeze(0)
-        
+
         for decoder in self.decoders:
             out, feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], feature * mask[:, 0:1, :], mask)
             outputs = torch.cat((outputs, out.unsqueeze(0)), dim=0)
