@@ -351,7 +351,8 @@ def get_pos_encoder(pos_encoding):
 class Encoder(nn.Module):
     def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, att_type, alpha, arch_type, pos_encoding):
         super(Encoder, self).__init__()
-
+        
+        self.conn = arch_type[1] if len(arch_type) > 1 else None 
         self.is_pos_enc = 1 if pos_encoding is not None else 0
 
         if self.is_pos_enc:
@@ -360,20 +361,20 @@ class Encoder(nn.Module):
 
         self.conv_1x1 = nn.Conv1d(input_dim, num_f_maps, 1) # fc layer
 
-        if arch_type == 'ddl':
-            print('Encoder arch: ', arch_type, flush=True)
+        if arch_type[0] == 'ddl':
+            print('Encoder arch: ddl - ', arch_type, flush=True)
             self.layers = nn.ModuleList(
             [AttModuleDDL(i, num_layers, num_f_maps, num_f_maps, r1, r2, att_type, 'encoder', alpha) for i in
              range(num_layers)])
 
-        elif arch_type == 'dda':
-            print('Encoder arch: ', arch_type, flush=True)
+        elif arch_type[0] == 'dda':
+            print('Encoder arch: dda - ', arch_type, flush=True)
             self.layers = nn.ModuleList(
             [AttModuleDDA(i, num_layers, num_f_maps, num_f_maps, r1, r2, att_type, 'encoder', alpha) for i in
              range(num_layers)])
 
         else:
-            print('Encoder arch: default', flush=True)
+            print('Encoder arch: default - ',arch_type, flush=True)
             self.layers = nn.ModuleList(
                 [AttModule(2 ** i, num_f_maps, num_f_maps, r1, r2, att_type, 'encoder', alpha) for i in # 2**i
                 range(num_layers)])
@@ -397,24 +398,38 @@ class Encoder(nn.Module):
             x = x.squeeze(2)
 
         feature = self.conv_1x1(x)
-        
+
         # add pos encoding
         if self.is_pos_enc:
             feature = feature.permute(0, 2, 1) # (B, C, L) -> (B, L, C)
             feature = self.position_en(feature)
             feature = feature.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
         
-        for layer in self.layers:
-            feature = layer(feature, None, mask)
-        
-        out = self.conv_out(feature) * mask[:, 0:1, :]
+        if self.conn == 'skip': # to record features from all encoder blocks 
+            bs, num_f_maps, L = feature.size()
+            # enc_features = feature.reshape(1, bs, num_f_maps, L)
+            enc_features = torch.zeros(1, bs, num_f_maps, L).to(device) # dummy first item
+            for layer in self.layers:
+                feature = layer(feature, None, mask)
+                enc_features = torch.cat((enc_features, feature.reshape(1, bs, num_f_maps, L)), dim=0)
+            
+            out = self.conv_out(feature) * mask[:, 0:1, :]
+      
+            return out, enc_features
 
-        return out, feature
+        else:
+            for layer in self.layers:
+                feature = layer(feature, None, mask)
+            
+            out = self.conv_out(feature) * mask[:, 0:1, :]
+           
+            return out, feature
 
 class Decoder(nn.Module):
     def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, att_type, alpha, arch_type, pos_encoding, num_dec):
         super(Decoder, self).__init__()         
         
+        self.conn = arch_type[1] if len(arch_type) > 1 else None 
         self.num_dec = num_dec
         self.is_pos_enc = 1 if pos_encoding is not None else 0
 
@@ -424,12 +439,12 @@ class Decoder(nn.Module):
 
         self.conv_1x1 = nn.Conv1d(input_dim, num_f_maps, 1)
 
-        if arch_type == 'ddl':
+        if arch_type[0] == 'ddl':
             self.layers = nn.ModuleList(
                 [AttModuleDDL(i, num_layers, num_f_maps, num_f_maps, r1, r2, att_type, 'decoder', alpha) for i in
                 range(num_layers)])
 
-        elif arch_type == 'dda':
+        elif arch_type[0] == 'dda':
             self.layers = nn.ModuleList(
                 [AttModuleDDA(i, num_layers, num_f_maps, num_f_maps, r1, r2, att_type, 'decoder', alpha) for i in
                 range(num_layers)])
@@ -451,8 +466,13 @@ class Decoder(nn.Module):
             feature = self.position_en(feature)
             feature = feature.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
 
+        num_layer = 1
         for layer in self.layers:
-            feature = layer(feature, fencoder, mask)
+            if self.conn == 'skip': 
+                feature = layer(feature, fencoder[-num_layer], mask)
+            else:
+                feature = layer(feature, fencoder, mask)
+            num_layer += 1 
 
         out = self.conv_out(feature) * mask[:, 0:1, :]
 
@@ -461,15 +481,21 @@ class Decoder(nn.Module):
 class MyTransformer(nn.Module):
     def __init__(self, num_decoders, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type, pos_enc):
         super(MyTransformer, self).__init__()
+        arch_type =  arch_type.split('_')
+        self.conn = arch_type[1] if len(arch_type) > 1 else None 
         self.encoder = Encoder(num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, att_type='sliding_att', alpha=1, arch_type=arch_type, pos_encoding=pos_enc)
         self.decoders = nn.ModuleList([copy.deepcopy(Decoder(num_layers, r1, r2, num_f_maps, num_classes, num_classes, att_type='sliding_att', arch_type=arch_type, alpha=exponential_descrease(s), pos_encoding=pos_enc, num_dec=s)) for s in range(num_decoders)]) # num_decoders
         
     def forward(self, x, mask):
-        out, feature = self.encoder(x, mask)
+        out, enc_feature = self.encoder(x, mask)
         outputs = out.unsqueeze(0)
         
         for decoder in self.decoders:
-            out, feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], feature * mask[:, 0:1, :], mask)
+            if self.conn == 'skip': 
+                out, _ = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_feature * mask[:, 0:1, :], mask)
+            else:
+                out, feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_feature * mask[:, 0:1, :], mask)
+            
             outputs = torch.cat((outputs, out.unsqueeze(0)), dim=0)
  
         return outputs
