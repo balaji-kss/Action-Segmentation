@@ -409,16 +409,14 @@ class Encoder(nn.Module):
         bs, num_f_maps, L = feature.size()
         enc_features = torch.empty(self.num_layers, bs, num_f_maps, L).to(device) 
         
-        num_layer = 0
-        for layer in self.layers:
+        for num_layer, layer in enumerate(self.layers):
             feature = layer(feature, None, mask)
-            if self.conn != None:  # for skip connection
+            if self.conn:  # for skip connection
                 enc_features[num_layer] = feature.reshape(1, bs, num_f_maps, L)
-            num_layer += 1
         
         out = self.conv_out(feature) * mask[:, 0:1, :]
     
-        return (out, enc_features) if self.conn != None else (out, feature) 
+        return (out, enc_features) if self.conn else (out, feature) 
 
 
 class Decoder(nn.Module):
@@ -466,8 +464,7 @@ class Decoder(nn.Module):
         bs, num_f_maps, L = feature.size()
         dec_features = torch.empty(self.num_layers, bs, num_f_maps, L).to(device) 
 
-        num_layer = 0
-        for layer in self.layers:
+        for num_layer, layer in enumerate(self.layers):
             if self.conn == 'skip': 
                 feature = layer(feature, fencoder[-num_layer - 1], mask) # unet order
                 # feature = layer(feature, fencoder[num_layer], mask) # cet order
@@ -477,11 +474,10 @@ class Decoder(nn.Module):
                 dec_features[num_layer] = feature.reshape(1, bs, num_f_maps, L)
             else:
                 feature = layer(feature, fencoder, mask)
-            num_layer += 1 
 
         out = self.conv_out(feature) * mask[:, 0:1, :]
         
-        return (out, dec_features) if self.conn != None else (out, feature) 
+        return (out, dec_features) if self.conn else (out, feature) 
     
 class MyTransformer(nn.Module):
     def __init__(self, num_decoders, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type, pos_enc):
@@ -501,7 +497,7 @@ class MyTransformer(nn.Module):
             elif self.conn == 'skip2':
                 out, enc_feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_feature * mask[:, 0:1, :], mask)
             else:
-                out, feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_feature * mask[:, 0:1, :], mask)
+                out, feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], feature * mask[:, 0:1, :], mask)
             
             outputs = torch.cat((outputs, out.unsqueeze(0)), dim=0)
  
