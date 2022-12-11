@@ -497,7 +497,7 @@ class MyTransformer(nn.Module):
             elif self.conn == 'skip2':
                 out, enc_feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_feature * mask[:, 0:1, :], mask)
             else:
-                out, feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], feature * mask[:, 0:1, :], mask)
+                out, enc_feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_feature * mask[:, 0:1, :], mask)
             
             outputs = torch.cat((outputs, out.unsqueeze(0)), dim=0)
  
