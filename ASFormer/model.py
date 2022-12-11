@@ -353,6 +353,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
         
         self.conn = arch_type[1] if len(arch_type) > 1 else None 
+        self.num_layers = num_layers
         self.is_pos_enc = 1 if pos_encoding is not None else 0
 
         if self.is_pos_enc:
@@ -405,31 +406,27 @@ class Encoder(nn.Module):
             feature = self.position_en(feature)
             feature = feature.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
         
-        if self.conn == 'skip': # to record features from all encoder blocks 
-            bs, num_f_maps, L = feature.size()
-            # enc_features = feature.reshape(1, bs, num_f_maps, L)
-            enc_features = torch.zeros(1, bs, num_f_maps, L).to(device) # dummy first item
-            for layer in self.layers:
-                feature = layer(feature, None, mask)
-                enc_features = torch.cat((enc_features, feature.reshape(1, bs, num_f_maps, L)), dim=0)
-            
-            out = self.conv_out(feature) * mask[:, 0:1, :]
-      
-            return out, enc_features
+        bs, num_f_maps, L = feature.size()
+        enc_features = torch.empty(self.num_layers, bs, num_f_maps, L).to(device) 
+        
+        num_layer = 0
+        for layer in self.layers:
+            feature = layer(feature, None, mask)
+            if self.conn != None:  # for skip connection
+                enc_features[num_layer] = feature.reshape(1, bs, num_f_maps, L)
+            num_layer += 1
+        
+        out = self.conv_out(feature) * mask[:, 0:1, :]
+    
+        return (out, enc_features) if self.conn != None else (out, feature) 
 
-        else:
-            for layer in self.layers:
-                feature = layer(feature, None, mask)
-            
-            out = self.conv_out(feature) * mask[:, 0:1, :]
-           
-            return out, feature
 
 class Decoder(nn.Module):
     def __init__(self, num_layers, r1, r2, num_f_maps, input_dim, num_classes, att_type, alpha, arch_type, pos_encoding, num_dec):
         super(Decoder, self).__init__()         
         
-        self.conn = arch_type[1] if len(arch_type) > 1 else None 
+        self.conn = arch_type[1] if len(arch_type) > 1 else None
+        self.num_layers = num_layers 
         self.num_dec = num_dec
         self.is_pos_enc = 1 if pos_encoding is not None else 0
 
@@ -466,17 +463,25 @@ class Decoder(nn.Module):
             feature = self.position_en(feature)
             feature = feature.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
 
-        num_layer = 1
+        bs, num_f_maps, L = feature.size()
+        dec_features = torch.empty(self.num_layers, bs, num_f_maps, L).to(device) 
+
+        num_layer = 0
         for layer in self.layers:
             if self.conn == 'skip': 
-                feature = layer(feature, fencoder[-num_layer], mask)
+                feature = layer(feature, fencoder[-num_layer - 1], mask) # unet order
+                # feature = layer(feature, fencoder[num_layer], mask) # cet order
+            elif self.conn =='skip2':
+                feature = layer(feature, fencoder[-num_layer - 1], mask) # unet order
+                # feature = layer(feature, fencoder[num_layer], mask) # cet order
+                dec_features[num_layer] = feature.reshape(1, bs, num_f_maps, L)
             else:
                 feature = layer(feature, fencoder, mask)
             num_layer += 1 
 
         out = self.conv_out(feature) * mask[:, 0:1, :]
-
-        return out, feature
+        
+        return (out, dec_features) if self.conn != None else (out, feature) 
     
 class MyTransformer(nn.Module):
     def __init__(self, num_decoders, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type, pos_enc):
@@ -493,6 +498,8 @@ class MyTransformer(nn.Module):
         for decoder in self.decoders:
             if self.conn == 'skip': 
                 out, _ = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_feature * mask[:, 0:1, :], mask)
+            elif self.conn == 'skip2':
+                out, enc_feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_feature * mask[:, 0:1, :], mask)
             else:
                 out, feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_feature * mask[:, 0:1, :], mask)
             
