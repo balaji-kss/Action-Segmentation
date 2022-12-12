@@ -77,14 +77,16 @@ class AttLayer(nn.Module):
         # x2 from the decoder
         
         query = self.query_conv(x1)
-        key = self.key_conv(x1)
+        #key = self.key_conv(x1)
          
         if self.stage == 'decoder':
             assert x2 is not None
             value = self.value_conv(x2)
+            key = self.key_conv(x2)
         else:
             value = self.value_conv(x1)
-            
+            key = self.key_conv(x1)
+
         if self.att_type == 'normal_att':
             return self._normal_self_att(query, key, value, mask)
         elif self.att_type == 'block_att':
@@ -409,7 +411,9 @@ class Encoder(nn.Module):
             feature = feature.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
         
         bs, num_f_maps, L = feature.size()
-        enc_features = torch.empty(self.num_layers, bs, num_f_maps, L).to(device) 
+
+        if self.conn:
+            enc_features = torch.empty(self.num_layers, bs, num_f_maps, L).to(device) 
         
         for num_layer, layer in enumerate(self.layers):
             feature = layer(feature, None, mask)
@@ -465,15 +469,17 @@ class Decoder(nn.Module):
             feature = feature.permute(0, 2, 1) # (B, L, C) -> (B, C, L)
 
         bs, num_f_maps, L = feature.size()
-        dec_features = torch.empty(self.num_layers, bs, num_f_maps, L).to(device) 
+
+        if self.conn:
+            dec_features = torch.empty(self.num_layers, bs, num_f_maps, L).to(device) 
 
         for num_layer, layer in enumerate(self.layers):
             if self.conn == 'ca_enc': 
-                feature = layer(feature, fencoder[-num_layer - 1], mask) # unet order
-                #feature = layer(feature, fencoder[num_layer], mask) # cet order
+                #feature = layer(feature, fencoder[-num_layer - 1], mask) # unet order
+                feature = layer(feature, fencoder[num_layer], mask) # cet order
             elif self.conn =='ca':
-                feature = layer(feature, fencoder[-num_layer - 1], mask) # unet order
-                #feature = layer(feature, fencoder[num_layer], mask) # cet order
+                #feature = layer(feature, fencoder[-num_layer - 1], mask) # unet order
+                feature = layer(feature, fencoder[num_layer], mask) # cet order
                 dec_features[num_layer] = feature.reshape(1, bs, num_f_maps, L)
             else:
                 feature = layer(feature, fencoder, mask)

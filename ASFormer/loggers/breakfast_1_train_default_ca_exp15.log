@@ -1,0 +1,47 @@
+*** Encoder:  ca  ***
+Encoder arch: default -  ['default', 'ca']
+ d:  1
+ d:  2
+ d:  4
+ d:  8
+ d:  16
+ d:  32
+ d:  64
+ d:  128
+ d:  256
+ d:  512
+*** Decoder:  ca  ***
+ d:  1
+ d:  2
+ d:  4
+ d:  8
+ d:  16
+ d:  32
+ d:  64
+ d:  128
+ d:  256
+ d:  512
+*** Decoder:  ca  ***
+ d:  1
+ d:  2
+ d:  4
+ d:  8
+ d:  16
+ d:  32
+ d:  64
+ d:  128
+ d:  256
+ d:  512
+*** Decoder:  ca  ***
+ d:  1
+ d:  2
+ d:  4
+ d:  8
+ d:  16
+ d:  32
+ d:  64
+ d:  128
+ d:  256
+ d:  512
+Model Size:  1147584
+LR:0.001, BS:12
