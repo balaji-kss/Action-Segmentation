@@ -215,14 +215,15 @@ class AttModuleDDL(nn.Module):
         super(AttModuleDDL, self).__init__()
 
         dilation1, dilation2 = 2 ** layer_lvl, 2 ** (num_layers - 1 - layer_lvl)
-        print('lvl: ', layer_lvl, ' d1: ', dilation1, ' d2: ', dilation2, flush=True)
+        window_size = max(dilation1, dilation2)
+        print('lvl: ', layer_lvl, ' d1: ', dilation1, ' d2: ', dilation2, ' window_size: ', window_size, flush=True)
 
         self.feed_forward_1 = ConvFeedForward(dilation1, in_channels, out_channels)
         self.feed_forward_2 = ConvFeedForward(dilation2, in_channels, out_channels)
         self.conv_fusion = nn.Conv1d(2 * out_channels, out_channels, 1)
 
         self.instance_norm = nn.InstanceNorm1d(in_channels, track_running_stats=False)
-        self.att_layer = AttLayer(in_channels, in_channels, out_channels, r1, r1, r2, dilation1, att_type=att_type, stage=stage) # dilation
+        self.att_layer = AttLayer(in_channels, in_channels, out_channels, r1, r1, r2, window_size, att_type=att_type, stage=stage) # dilation
         self.conv_1x1 = nn.Conv1d(out_channels, out_channels, 1)
         self.dropout = nn.Dropout()
         self.alpha = alpha
