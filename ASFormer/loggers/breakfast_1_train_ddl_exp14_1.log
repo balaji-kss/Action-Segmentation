@@ -1,0 +1,63 @@
+*** Encoder:  None  ***
+Encoder arch: ddl -  ['ddl']
+lvl:  0  d1:  1  d2:  512  window_size:  32
+lvl:  1  d1:  2  d2:  256  window_size:  32
+lvl:  2  d1:  4  d2:  128  window_size:  32
+lvl:  3  d1:  8  d2:  64  window_size:  32
+lvl:  4  d1:  16  d2:  32  window_size:  32
+lvl:  5  d1:  32  d2:  16  window_size:  32
+lvl:  6  d1:  64  d2:  8  window_size:  64
+lvl:  7  d1:  128  d2:  4  window_size:  128
+lvl:  8  d1:  256  d2:  2  window_size:  256
+lvl:  9  d1:  512  d2:  1  window_size:  512
+*** Decoder:  None  ***
+lvl:  0  d1:  1  d2:  512  window_size:  32
+lvl:  1  d1:  2  d2:  256  window_size:  32
+lvl:  2  d1:  4  d2:  128  window_size:  32
+lvl:  3  d1:  8  d2:  64  window_size:  32
+lvl:  4  d1:  16  d2:  32  window_size:  32
+lvl:  5  d1:  32  d2:  16  window_size:  32
+lvl:  6  d1:  64  d2:  8  window_size:  64
+lvl:  7  d1:  128  d2:  4  window_size:  128
+lvl:  8  d1:  256  d2:  2  window_size:  256
+lvl:  9  d1:  512  d2:  1  window_size:  512
+*** Decoder:  None  ***
+lvl:  0  d1:  1  d2:  512  window_size:  32
+lvl:  1  d1:  2  d2:  256  window_size:  32
+lvl:  2  d1:  4  d2:  128  window_size:  32
+lvl:  3  d1:  8  d2:  64  window_size:  32
+lvl:  4  d1:  16  d2:  32  window_size:  32
+lvl:  5  d1:  32  d2:  16  window_size:  32
+lvl:  6  d1:  64  d2:  8  window_size:  64
+lvl:  7  d1:  128  d2:  4  window_size:  128
+lvl:  8  d1:  256  d2:  2  window_size:  256
+lvl:  9  d1:  512  d2:  1  window_size:  512
+*** Decoder:  None  ***
+lvl:  0  d1:  1  d2:  512  window_size:  32
+lvl:  1  d1:  2  d2:  256  window_size:  32
+lvl:  2  d1:  4  d2:  128  window_size:  32
+lvl:  3  d1:  8  d2:  64  window_size:  32
+lvl:  4  d1:  16  d2:  32  window_size:  32
+lvl:  5  d1:  32  d2:  16  window_size:  32
+lvl:  6  d1:  64  d2:  8  window_size:  64
+lvl:  7  d1:  128  d2:  4  window_size:  128
+lvl:  8  d1:  256  d2:  2  window_size:  256
+lvl:  9  d1:  512  d2:  1  window_size:  512
+Model Size:  1971904
+LR:0.001, BS:12
+Epoch: 1, Time: 2.9688, Train loss: 0.9390, Train acc: 0.2305
+Epoch: 2, Time: 3.0293, Train loss: 0.7125, Train acc: 0.3185
+Epoch: 3, Time: 3.0835, Train loss: 0.6225, Train acc: 0.3723
+Epoch: 4, Time: 3.0845, Train loss: 0.5888, Train acc: 0.4124
+Epoch: 5, Time: 3.0063, Train loss: 0.5001, Train acc: 0.4672
+Epoch: 6, Time: 3.1030, Train loss: 0.4904, Train acc: 0.5105
+Epoch: 7, Time: 3.0107, Train loss: 0.4612, Train acc: 0.5334
+Epoch: 8, Time: 2.9511, Train loss: 0.4463, Train acc: 0.5658
+Epoch: 9, Time: 3.0419, Train loss: 0.4403, Train acc: 0.5888
+Epoch: 10, Time: 3.0444, Train loss: 0.4110, Train acc: 0.6532
+---[epoch 10]---: tst acc = 0.571682
+Epoch: 11, Time: 2.9194, Train loss: 0.4604, Train acc: 0.6450
+Epoch: 12, Time: 2.9830, Train loss: 0.4197, Train acc: 0.6636
+Epoch: 13, Time: 2.9819, Train loss: 0.4219, Train acc: 0.6845
+Epoch    14: reducing learning rate of group 0 to 5.0000e-04.
+Epoch: 14, Time: 3.1134, Train loss: 0.5187, Train acc: 0.6282

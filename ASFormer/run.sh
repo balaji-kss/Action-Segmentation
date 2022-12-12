@@ -1,8 +1,8 @@
 dataset=breakfast #50salads #gtea #breakfast
 split=1
 action=train #predict train
-version=exp15
-arch=default_ca
+version=exp17
+arch=ddl_ca
 LOGFILE=loggers/${dataset}_${split}_${action}_${arch}_${version}.log
 
 # train

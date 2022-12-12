@@ -36,6 +36,12 @@ class AttentionHelper(nn.Module):
         
         energy = torch.bmm(proj_query.permute(0, 2, 1), proj_key)  # out of shape (B, L1, L2)
         attention = energy / np.sqrt(c1)
+
+        # print('proj_query shape ', proj_query.shape)
+        # print('proj_key shape ', proj_key.shape)
+        # print('proj_val shape ', proj_val.shape)
+        # print('attention shape ', attention.shape)
+        # print('padding_mask shape ', padding_mask.shape, padding_mask[0])
         attention = attention + torch.log(padding_mask + 1e-6) # mask the zero paddings. log(1e-6) for zero paddings
         attention = self.softmax(attention) 
         attention = attention * padding_mask
@@ -77,15 +83,15 @@ class AttLayer(nn.Module):
         # x2 from the decoder
         
         query = self.query_conv(x1)
-        #key = self.key_conv(x1)
+        key = self.key_conv(x1)
          
         if self.stage == 'decoder':
             assert x2 is not None
             value = self.value_conv(x2)
-            key = self.key_conv(x2)
-        else:
+            # key = self.key_conv(x2)
+        else: 
             value = self.value_conv(x1)
-            key = self.key_conv(x1)
+            # key = self.key_conv(x1)
 
         if self.att_type == 'normal_att':
             return self._normal_self_att(query, key, value, mask)
@@ -162,6 +168,8 @@ class AttLayer(nn.Module):
         v = torch.cat([v[:,:, i*self.bl:(i+1)*self.bl+(self.bl//2)*2] for i in range(nb)], dim=0) 
         # 3. construct window mask of shape (1, l, 2l), and use it to generate final mask
         padding_mask = torch.cat([padding_mask[:,:, i*self.bl:(i+1)*self.bl+(self.bl//2)*2] for i in range(nb)], dim=0) # of shape (m*nb, 1, 2l)
+        # print('before padding_mask ', padding_mask)
+        # print('before window_mask ', self.window_mask)
         final_mask = self.window_mask.repeat(m_batchsize * nb, 1, 1) * padding_mask 
         
         output, attention = self.att_helper.scalar_dot_att(q, k, v, final_mask)
@@ -217,7 +225,8 @@ class AttModuleDDL(nn.Module):
         super(AttModuleDDL, self).__init__()
 
         dilation1, dilation2 = 2 ** layer_lvl, 2 ** (num_layers - 1 - layer_lvl)
-        window_size = max(dilation1, dilation2)
+        #window_size = max(dilation1, 32)
+        window_size = dilation1
         print('lvl: ', layer_lvl, ' d1: ', dilation1, ' d2: ', dilation2, ' window_size: ', window_size, flush=True)
 
         self.feed_forward_1 = ConvFeedForward(dilation1, in_channels, out_channels)
