@@ -353,6 +353,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
         
         self.conn = arch_type[1] if len(arch_type) > 1 else None 
+        print('*** Encoder: ', self.conn, ' ***')
         self.num_layers = num_layers
         self.is_pos_enc = 1 if pos_encoding is not None else 0
 
@@ -424,6 +425,7 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()         
         
         self.conn = arch_type[1] if len(arch_type) > 1 else None
+        print('*** Decoder: ', self.conn, ' ***')
         self.num_layers = num_layers 
         self.num_dec = num_dec
         self.is_pos_enc = 1 if pos_encoding is not None else 0
@@ -465,12 +467,12 @@ class Decoder(nn.Module):
         dec_features = torch.empty(self.num_layers, bs, num_f_maps, L).to(device) 
 
         for num_layer, layer in enumerate(self.layers):
-            if self.conn == 'skip': 
+            if self.conn == 'ca_enc': 
                 feature = layer(feature, fencoder[-num_layer - 1], mask) # unet order
-                # feature = layer(feature, fencoder[num_layer], mask) # cet order
-            elif self.conn =='skip2':
+                #feature = layer(feature, fencoder[num_layer], mask) # cet order
+            elif self.conn =='ca':
                 feature = layer(feature, fencoder[-num_layer - 1], mask) # unet order
-                # feature = layer(feature, fencoder[num_layer], mask) # cet order
+                #feature = layer(feature, fencoder[num_layer], mask) # cet order
                 dec_features[num_layer] = feature.reshape(1, bs, num_f_maps, L)
             else:
                 feature = layer(feature, fencoder, mask)
@@ -482,7 +484,7 @@ class Decoder(nn.Module):
 class MyTransformer(nn.Module):
     def __init__(self, num_decoders, num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, arch_type, pos_enc):
         super(MyTransformer, self).__init__()
-        arch_type =  arch_type.split('_')
+        arch_type =  arch_type.split('_', 1)
         self.conn = arch_type[1] if len(arch_type) > 1 else None 
         self.encoder = Encoder(num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, att_type='sliding_att', alpha=1, arch_type=arch_type, pos_encoding=pos_enc)
         self.decoders = nn.ModuleList([copy.deepcopy(Decoder(num_layers, r1, r2, num_f_maps, num_classes, num_classes, att_type='sliding_att', arch_type=arch_type, alpha=exponential_descrease(s), pos_encoding=pos_enc, num_dec=s)) for s in range(num_decoders)]) # num_decoders
@@ -492,9 +494,9 @@ class MyTransformer(nn.Module):
         outputs = out.unsqueeze(0)
         
         for decoder in self.decoders:
-            if self.conn == 'skip': 
+            if self.conn == 'ca_enc': 
                 out, _ = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_feature * mask[:, 0:1, :], mask)
-            elif self.conn == 'skip2':
+            elif self.conn == 'ca':
                 out, enc_feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_feature * mask[:, 0:1, :], mask)
             else:
                 out, enc_feature = decoder(F.softmax(out, dim=1) * mask[:, 0:1, :], enc_feature * mask[:, 0:1, :], mask)
@@ -608,10 +610,11 @@ class Trainer:
  
                     batch_target = batch_target.squeeze()
                     confidence, predicted = confidence.squeeze(), predicted.squeeze()
- 
-                    segment_bars_with_confidence(results_dir + '/{}_stage{}.png'.format(vid, i),
-                                                 confidence.tolist(),
-                                                 batch_target.tolist(), predicted.tolist())
+
+                    if 0:
+                        segment_bars_with_confidence(results_dir + '/{}_stage{}.png'.format(vid, i),
+                                                    confidence.tolist(),
+                                                    batch_target.tolist(), predicted.tolist())
 
                 recognition = []
                 for i in range(len(predicted)):

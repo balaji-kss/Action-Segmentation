@@ -56,7 +56,7 @@ if args.dataset == "gtea":
 if args.dataset == 'breakfast':
     sample_rate = 4
     lr = 0.001
-    bz = 2
+    bz = 12
 
 vid_list_file = "./data/"+args.dataset+"/splits/train.split"+args.split+".bundle"
 vid_list_file_tst = "./data/"+args.dataset+"/splits/test.split"+args.split+".bundle"
